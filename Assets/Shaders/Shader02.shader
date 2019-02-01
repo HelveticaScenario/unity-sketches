@@ -1,46 +1,20 @@
-﻿Shader "Unlit/Shader02"
-{
-    Properties
-    {
-    }
-    SubShader
-    {
-        Tags { "RenderType"="Opaque" }
-        LOD 100
-
-        Pass
-        {
-            CGPROGRAM
-            #pragma vertex vert
-            #pragma fragment frag
-
-            #include "UnityCG.cginc"
-
-            struct appdata
-            {
-                float4 vertex : POSITION;
-            };
-
-            struct v2f
-            {
-                float4 vertex : SV_POSITION;
-            };
-
-            sampler2D _MainTex;
-            float4 _MainTex_ST;
-
-            v2f vert (appdata v)
-            {
-                v2f o;
-                o.vertex = UnityObjectToClipPos(v.vertex);
-                return o;
-            }
-
-            half4 frag (v2f i) : SV_Target
-            {
-                return half4(0.0,1.0,0.0,1.0);
-            }
-            ENDCG
+﻿Shader "Unlit/Shader02" {
+    SubShader {
+        Tags { "RenderType" = "Opaque" }
+        CGPROGRAM
+        #pragma surface surf Standard
+        struct Input {
+            float4 color : COLOR;
+            float3 viewDir;
+            float4 screenPos;
+            float3 worldPos;
+            float3 worldRefl;
+            float3 worldNormal;
+        };
+        void surf (Input IN, inout SurfaceOutputStandard o) {
+            o.Albedo = IN.worldPos; // 1 = (1,1,1,1) = white
         }
+        ENDCG
     }
+    Fallback "Diffuse"
 }
