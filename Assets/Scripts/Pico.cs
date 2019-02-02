@@ -118,8 +118,14 @@ public class Pico : MonoBehaviour
             return;
         }
         screenData[(int)start] = c;
-        var s = Unity.Collections.LowLevel.Unsafe.NativeArrayUnsafeUtility.GetUnsafePtr(screenData);
-        ulong _d = (ulong)s + 1 + start;
+        if (length == 1)
+        {
+            return;
+        }
+        var ptr = Unity.Collections.LowLevel.Unsafe.NativeArrayUnsafeUtility.GetUnsafePtr(screenData);
+        ulong _s = (ulong)ptr + start;
+        var s = (void*)_s;
+        ulong _d = _s + 1;
         var d = (void*)_d;
         Unity.Collections.LowLevel.Unsafe.UnsafeUtility.MemCpyReplicate(d, s, 1, (int)length - 1);
         screenChanged = true;
@@ -127,7 +133,7 @@ public class Pico : MonoBehaviour
 
     public unsafe void memcpy(ulong source, ulong dest, ulong length)
     {
-        if (source + length > (ulong)screenData.Length || dest + length > (ulong)screenData.Length || length == 0)
+        if ((source + length >= (ulong)screenData.Length) || (dest + length >= (ulong)screenData.Length) || length == 0)
         {
             return;
         }
@@ -135,7 +141,7 @@ public class Pico : MonoBehaviour
         var ptr = Unity.Collections.LowLevel.Unsafe.NativeArrayUnsafeUtility.GetUnsafePtr(screenData);
         var s = (ulong)ptr + source;
         var d = (ulong)ptr + dest;
-        Unity.Collections.LowLevel.Unsafe.UnsafeUtility.MemCpy((void*)d, (void*)s, (long)length);
+        Unity.Collections.LowLevel.Unsafe.UnsafeUtility.MemMove((void*)d, (void*)s, (long)length);
         screenChanged = true;
     }
 
@@ -171,30 +177,6 @@ public class Pico : MonoBehaviour
     }
     public void circ(int x, int y, uint radius, byte color)
     {
-        // int offx = (int)radius;
-        // int offy = 0;
-        // int decisionOver2 = (int)(1 - offx); // Decision criterion divided by 2 evaluated at x=r, y=0
-        // while (offy <= offx)
-        // {
-        //     pset(offx + x, offy + y, c);   // Octant 1
-        //     pset(offy + x, offx + y, c);   // Octant 2
-        //     pset(-offx + x, offy + y, c);  // Octant 4
-        //     pset(-offy + x, offx + y, c);  // Octant 3
-        //     pset(-offx + x, -offy + y, c); // Octant 5
-        //     pset(-offy + x, -offx + y, c); // Octant 6
-        //     pset(offx + x, -offy + y, c);  // Octant 7
-        //     pset(offy + x, -offx + y, c);  // Octant 8
-        //     offy++;
-        //     if (decisionOver2 <= 0)
-        //     {
-        //         decisionOver2 += 2 * offy + 1; // Change in decision criterion for y -> y+1
-        //     }
-        //     else
-        //     {
-        //         offx--;
-        //         decisionOver2 += 2 * (offy - offx) + 1; // Change for y -> y+1, x -> x-1
-        //     }
-        // }
         int r = (int)radius;
         int _x = -r, _y = 0, err = 2 - 2 * r;
         do
@@ -243,12 +225,16 @@ public class Pico : MonoBehaviour
         byte final_color = color;
         for (int _y = yt; _y < yb; _y++)
         {
-            int xl = Mathf.Max(SidesBufferLeft[_y], 0);
-            int xr = Mathf.Min(SidesBufferRight[_y] + 1, (int)Width);
-            line(xl, _y, xr, _y, final_color);
+            var xl = Mathf.Max(SidesBufferLeft[_y], 0);
+            var xr = Mathf.Min(SidesBufferRight[_y], (int)Width - 1);
+            hline(xl, xr, _y, final_color);
         }
     }
 
+    void hline(int xl, int xr, int y, byte c)
+    {
+        memset(((ulong)y * (ulong)Width) + (ulong)xl, (ulong)(xr - xl + 1), c);
+    }
     public void line(int x0, int y0, int x1, int y1, int c)
     {
         byte _c = wrapInt(c);
@@ -276,7 +262,7 @@ public class Pico : MonoBehaviour
                 pset(x0, y0, _c);
                 return;
             }
-            memset((ulong)((y0 * Width) + x0), (ulong)(x1 - x0), _c);
+            hline(x0, x1, y0, _c);
             return;
         }
 

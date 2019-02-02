@@ -54,7 +54,10 @@
         "Temp/":true
     },
     "cSpell.words": [
+        "hline",
         "mathf",
+        "memcpy",
+        "pget",
         "pico",
         "pset"
     ]
