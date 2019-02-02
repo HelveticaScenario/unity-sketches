@@ -20,14 +20,14 @@ public class Pico : MonoBehaviour
     private bool initialized = false;
     // private
     // Start is called before the first frame update
-    public void _init()
+    public void _init(FilterMode filterMode = FilterMode.Point)
     {
         if (initialized)
         {
             return;
         }
         screen = new Texture2D((int)Width, (int)Height, TextureFormat.R8, false, false);
-        screen.filterMode = FilterMode.Point;
+        screen.filterMode = filterMode;
         swap = new Texture2D(256, 1, TextureFormat.R8, false, false);
         swap.filterMode = FilterMode.Point;
         palette = new Texture2D(256, 1, TextureFormat.RGBA32, false, false);

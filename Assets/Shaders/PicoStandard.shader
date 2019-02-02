@@ -1,4 +1,4 @@
-﻿Shader "Custom/Shader03"
+﻿Shader "Custom/PicoStandard"
 {
     Properties
     {
@@ -43,32 +43,14 @@
 
         void surf (Input IN, inout SurfaceOutputStandard o)
         {
-            
-            // precision mediump float;
-            // precision mediump int;
-            
-            // attribute vec2 a_position;
-            // attribute vec2 a_texCoord;
-            
-            // varying vec2 v_texCoord;
-            // void main() {
-            //       v_texCoord = a_texCoord;
-            //   gl_Position = vec4(a_position,0, 1);
-            // }
-            // fixed4 index = tex2D(u_screen, v_texCoord);
-          //Do a dependency texture read
-            // Albedo comes from a texture tinted by color
             fixed index = tex2D (_MainTex, IN.uv_MainTex);
             fixed iii = tex2D (_SwapTex, float2(index, 0));
             fixed4 c = tex2D(_PaletteTex, float2(iii, 0));
-            // o.Albedo = c.rgb;
-            // o.Albedo = 1; //index.rgb;//float3(IN.uv_MainTex, 0);
-            // fixed4 c = tex2D (_MainTex, IN.uv_MainTex) * _Color;
             o.Albedo = c.rgb;
-            // Metallic and smoothness come from slider variables
             o.Metallic = _Metallic;
             o.Smoothness = _Glossiness;
-            o.Alpha = 1;
+            o.Emission = 0.1;
+            o.Alpha = c.a;
         }
         ENDCG
     }
