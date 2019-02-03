@@ -372,11 +372,6 @@ MonoBehaviour:
   m_GameObject: {fileID: 1249118873}
   m_Enabled: 1
   m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: da22ed9effa8f4b749c50b12c6ed6b8b, type: 3}
+  m_Script: {fileID: 11500000, guid: 442f741b59cbb4c90893f1119a23a2da, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  scale: 9.4
-  Color1: 7
-  Color2: 12
-  Color3: 5
-  Color4: 13

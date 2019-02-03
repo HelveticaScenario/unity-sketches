@@ -53,7 +53,7 @@
             fixed4 frag (v2f i) : SV_Target
             {
                 // sample the texture
-                fixed index = tex2D (_MainTex, i.uv);
+                fixed index = tex2D (_MainTex, float2(i.uv.x, (i.uv.y - 1) * -1));
                 fixed iii = tex2D (_SwapTex, float2(index, 0));
                 fixed4 col = tex2D(_PaletteTex, float2(iii, 0));
                 // apply fog

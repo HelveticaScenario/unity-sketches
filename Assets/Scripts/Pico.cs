@@ -4,6 +4,13 @@ using UnityEngine;
 
 public class Pico : MonoBehaviour
 {
+    struct ClipRect
+    {
+        public int l { get; set; }
+        public int t { get; set; }
+        public int r { get; set; }
+        public int b { get; set; }
+    }
     public uint Width;
     public uint Height;
     private Texture2D screen;
@@ -18,6 +25,8 @@ public class Pico : MonoBehaviour
     private bool swapChanged = false;
     private bool paletteChanged = false;
     private bool initialized = false;
+    private ClipRect clipRect;
+
     // private
     // Start is called before the first frame update
     public void _init(FilterMode filterMode = FilterMode.Point)
@@ -76,6 +85,8 @@ public class Pico : MonoBehaviour
 
         SidesBufferLeft = new int[(int)Height];
         SidesBufferRight = new int[(int)Height];
+
+        clipRect = new ClipRect { l = 0, t = 0, r = (int)Width, b = (int)Height };
 
         initialized = true;
     }
@@ -160,13 +171,25 @@ public class Pico : MonoBehaviour
 
     public void pset(int x, int y, byte c)
     {
-        if (x < 0 || y < 0 || x >= Width || y >= Height)
+        if (x < clipRect.l || y < clipRect.t || x >= clipRect.r || y >= clipRect.b)
         {
             return;
-        }
+        };
+        // y = (y - (int)Height) * -1;
+
         screenData[(int)((y * Width) + x)] = c;
         screenChanged = true;
     }
+
+    public void pset(Vector2 v, byte c)
+    {
+        pset(
+            Mathf.RoundToInt(v.x),
+            Mathf.RoundToInt(v.y),
+            c
+        );
+    }
+
     byte pget(int x, int y)
     {
         if (x < 0 || y < 0 || x >= Width || y >= Height)
@@ -175,6 +198,195 @@ public class Pico : MonoBehaviour
         }
         return screenData[(int)((y * Width) + x)];
     }
+
+    void clip(int x, int y, int width, int height)
+    {
+
+        clipRect.l = x;
+        clipRect.t = y;
+        clipRect.r = x + width;
+        clipRect.b = y + height;
+
+        if (clipRect.l < 0) clipRect.l = 0;
+        if (clipRect.t < 0) clipRect.t = 0;
+        if (clipRect.r > Width) clipRect.r = (int)Width;
+        if (clipRect.b > Height) clipRect.b = (int)Height;
+    }
+
+    void triPixelFunc(int x, int y, byte color)
+    {
+        // if (x < clipRect.l || y < clipRect.t || x >= clipRect.r || y >= clipRect.b)
+        // {
+        //     return;
+        // };
+        setSidePixel(x, y);
+    }
+
+    public void rect(int x0, int y0, int x1, int y1, int color)
+    {
+        if (
+            (y0 < (int)clipRect.t && y1 < (int)clipRect.t) ||
+            (y0 >= (int)clipRect.b && y1 >= (int)clipRect.b) ||
+            (x0 < (int)clipRect.l && x1 < (int)clipRect.l) ||
+            (x0 >= (int)clipRect.r && x1 >= (int)clipRect.r)
+        )
+        {
+            return;
+        }
+        byte c = wrapInt(color);
+        if (x0 > x1)
+        {
+            var tmp = x0;
+            x0 = x1;
+            x1 = tmp;
+        }
+        if (y0 > y1)
+        {
+            var tmp = y0;
+            y0 = y1;
+            y1 = tmp;
+        }
+        var _x0 = Mathf.Min(Mathf.Max(x0, clipRect.l), (int)clipRect.r - 1);
+        var _x1 = Mathf.Min(Mathf.Max(x1, clipRect.l), (int)clipRect.r - 1);
+        var _y0 = Mathf.Min(Mathf.Max(y0, clipRect.t), (int)clipRect.b - 1);
+        var _y1 = Mathf.Min(Mathf.Max(y1, clipRect.t), (int)clipRect.b - 1);
+
+
+
+        if (y0 >= (int)clipRect.t && y0 < (int)clipRect.b)
+        {
+            hline(_x0, _x1, _y0, c);
+        }
+        if (y1 >= (int)clipRect.t && y1 < (int)clipRect.b)
+        {
+            hline(_x0, _x1, _y1, c);
+        }
+        if (x0 >= (int)clipRect.l && x0 < (int)clipRect.r)
+        {
+            for (var y = _y0; y <= _y1; y++)
+            {
+                pset(_x0, y, c);
+            }
+        }
+        if (x1 >= (int)clipRect.l && x1 < (int)clipRect.r)
+        {
+            for (var y = _y0; y <= _y1; y++)
+            {
+                pset(_x1, y, c);
+            }
+        }
+
+    }
+    public void rect(Vector2 v1, Vector2 v2, int color)
+    {
+        rect(
+            Mathf.RoundToInt(v1.x),
+            Mathf.RoundToInt(v1.y),
+            Mathf.RoundToInt(v2.x),
+            Mathf.RoundToInt(v2.y),
+            color
+        );
+    }
+    public void rectfill(int x0, int y0, int x1, int y1, int color)
+    {
+        if (
+            (y0 < (int)clipRect.t && y1 < (int)clipRect.t) ||
+            (y0 >= (int)clipRect.b && y1 >= (int)clipRect.b) ||
+            (x0 < (int)clipRect.l && x1 < (int)clipRect.l) ||
+            (x0 >= (int)clipRect.r && x1 >= (int)clipRect.r)
+        )
+        {
+            return;
+        }
+        byte c = wrapInt(color);
+        if (x0 > x1)
+        {
+            var tmp = x0;
+            x0 = x1;
+            x1 = tmp;
+        }
+        if (y0 > y1)
+        {
+            var tmp = y0;
+            y0 = y1;
+            y1 = tmp;
+        }
+        var _x0 = Mathf.Min(Mathf.Max(x0, clipRect.l), (int)clipRect.r - 1);
+        var _x1 = Mathf.Min(Mathf.Max(x1, clipRect.l), (int)clipRect.r - 1);
+        var _y0 = Mathf.Min(Mathf.Max(y0, clipRect.t), (int)clipRect.b - 1);
+        var _y1 = Mathf.Min(Mathf.Max(y1, clipRect.t), (int)clipRect.b - 1);
+
+        for (var y = _y0; y <= _y1; y++)
+        {
+            hline(_x0, _x1, y, c);
+        }
+
+    }
+    public void rectfill(Vector2 v1, Vector2 v2, int color)
+    {
+        rectfill(
+            Mathf.RoundToInt(v1.x),
+            Mathf.RoundToInt(v1.y),
+            Mathf.RoundToInt(v2.x),
+            Mathf.RoundToInt(v2.y),
+            color
+        );
+    }
+
+    public void tri(int x1, int y1, int x2, int y2, int x3, int y3, int color)
+    {
+        line(x1, y1, x2, y2, color);
+        line(x2, y2, x3, y3, color);
+        line(x3, y3, x1, y1, color);
+    }
+
+    public void tri(Vector2 v1, Vector2 v2, Vector2 v3, int color)
+    {
+        tri(
+            Mathf.RoundToInt(v1.x),
+            Mathf.RoundToInt(v1.y),
+            Mathf.RoundToInt(v2.x),
+            Mathf.RoundToInt(v2.y),
+            Mathf.RoundToInt(v3.x),
+            Mathf.RoundToInt(v3.y),
+            color
+        );
+    }
+
+    public void trifill(int x1, int y1, int x2, int y2, int x3, int y3, int color)
+    {
+
+        initSidesBuffer();
+
+        _line(x1, y1, x2, y2, color, triPixelFunc);
+        _line(x2, y2, x3, y3, color, triPixelFunc);
+        _line(x3, y3, x1, y1, color, triPixelFunc);
+
+        byte final_color = wrapInt(color);
+        int yt = Mathf.Max(clipRect.t, Mathf.Min(y1, Mathf.Min(y2, y3)));
+        int yb = Mathf.Min(clipRect.b, Mathf.Max(y1, Mathf.Max(y2, y3)) + 1);
+
+        for (int y = yt; y < yb; y++)
+        {
+            int xl = Mathf.Max(SidesBufferLeft[y], clipRect.l);
+            int xr = Mathf.Min(SidesBufferRight[y], clipRect.r - 1);
+            hline(xl, xr, y, final_color);
+        }
+    }
+
+    public void trifill(Vector2 v1, Vector2 v2, Vector2 v3, int color)
+    {
+        trifill(
+            Mathf.RoundToInt(v1.x),
+            Mathf.RoundToInt(v1.y),
+            Mathf.RoundToInt(v2.x),
+            Mathf.RoundToInt(v2.y),
+            Mathf.RoundToInt(v3.x),
+            Mathf.RoundToInt(v3.y),
+            color
+        );
+    }
+
     public void circ(int x, int y, uint radius, byte color)
     {
         int r = (int)radius;
@@ -190,7 +402,15 @@ public class Pico : MonoBehaviour
             if (r > _x || err > _y) err += ++_x * 2 + 1;
         } while (_x < 0);
     }
-
+    public void circ(Vector2 v, uint radius, byte color)
+    {
+        circ(
+            Mathf.RoundToInt(v.x),
+            Mathf.RoundToInt(v.y),
+            radius,
+            color
+        );
+    }
     public void circfill(int xm, int ym, uint radius, byte color)
     {
         if (radius <= 0)
@@ -225,45 +445,73 @@ public class Pico : MonoBehaviour
         byte final_color = color;
         for (int _y = yt; _y < yb; _y++)
         {
-            var xl = Mathf.Max(SidesBufferLeft[_y], 0);
-            var xr = Mathf.Min(SidesBufferRight[_y], (int)Width - 1);
+            int xl = Mathf.Max(SidesBufferLeft[_y], clipRect.l);
+            int xr = Mathf.Min(SidesBufferRight[_y], clipRect.r - 1);
             hline(xl, xr, _y, final_color);
         }
     }
 
+    public void circfill(Vector2 v, uint radius, byte color)
+    {
+        circfill(
+            Mathf.RoundToInt(v.x),
+            Mathf.RoundToInt(v.y),
+            radius,
+            color
+        );
+    }
     void hline(int xl, int xr, int y, byte c)
     {
         memset(((ulong)y * (ulong)Width) + (ulong)xl, (ulong)(xr - xl + 1), c);
     }
+    delegate void linePixelFunc(int x, int y, byte c);
+
     public void line(int x0, int y0, int x1, int y1, int c)
     {
+        _line(x0, y0, x1, y1, c, pset);
+    }
+    public void line(Vector2 v1, Vector2 v2, byte color)
+    {
+        _line(
+            Mathf.RoundToInt(v1.x),
+            Mathf.RoundToInt(v1.y),
+            Mathf.RoundToInt(v2.x),
+            Mathf.RoundToInt(v2.y),
+            color,
+            pset
+        );
+    }
+    private void _line(int x0, int y0, int x1, int y1, int c, linePixelFunc func)
+    {
         byte _c = wrapInt(c);
-        x0 = Mathf.Min(Mathf.Max(x0, 0), (int)Width - 1);
-        x1 = Mathf.Min(Mathf.Max(x1, 0), (int)Width - 1);
-        y0 = Mathf.Min(Mathf.Max(y0, 0), (int)Height - 1);
-        y1 = Mathf.Min(Mathf.Max(y1, 0), (int)Height - 1);
-        if (x0 > x1)
-        {
-            int tmp = x0;
-            x0 = x1;
-            x1 = tmp;
-        }
-        if (y0 > y1)
-        {
-            int tmp = y0;
-            y0 = y1;
-            y1 = tmp;
-        }
 
         if (y0 == y1)
         {
             if (x0 == x1)
             {
-                pset(x0, y0, _c);
+                func(x0, y0, _c);
                 return;
             }
-            hline(x0, x1, y0, _c);
-            return;
+            if (func == pset)
+            {
+                if (x0 > x1)
+                {
+                    int tmp = x0;
+                    x0 = x1;
+                    x1 = tmp;
+                }
+                if (
+                    y0 >= (int)clipRect.t && y0 < (int)clipRect.b &&
+                    (x0 >= (int)clipRect.l || x1 >= (int)clipRect.l || x0 < (int)clipRect.r || x1 < (int)clipRect.r)
+                )
+                {
+                    x0 = Mathf.Min(Mathf.Max(x0, clipRect.l), (int)clipRect.r - 1);
+                    x1 = Mathf.Min(Mathf.Max(x1, clipRect.l), (int)clipRect.r - 1);
+                    hline(x0, x1, y0, _c);
+                }
+
+                return;
+            }
         }
 
         var dx = Mathf.Abs(x1 - x0);
@@ -273,7 +521,7 @@ public class Pico : MonoBehaviour
         var err = dx - dy;
         while (true)
         {
-            pset(x0, y0, _c);
+            func(x0, y0, _c);
 
             if ((x0 == x1) && (y0 == y1)) break;
             var e2 = 2 * err;
