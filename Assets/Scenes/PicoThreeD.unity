@@ -121,6 +121,7 @@ GameObject:
   serializedVersion: 6
   m_Component:
   - component: {fileID: 101973826}
+  - component: {fileID: 101973827}
   m_Layer: 0
   m_Name: GameObject
   m_TagString: Untagged
@@ -142,6 +143,19 @@ Transform:
   m_Father: {fileID: 0}
   m_RootOrder: 2
   m_LocalEulerAnglesHint: {x: 37.32, y: 27.41, z: 0}
+--- !u!114 &101973827
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 101973825}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 0de2098980b0c4ca28433f68757c1b4b, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  rotateBy: {x: 10, y: 20, z: 15}
 --- !u!1 &1034023221
 GameObject:
   m_ObjectHideFlags: 0
@@ -257,8 +271,8 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: a002e3e423af24e0fa68e6de9bafa890, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  Width: 240
-  Height: 136
+  Width: 480
+  Height: 272
 --- !u!64 &1249118875
 MeshCollider:
   m_ObjectHideFlags: 0
@@ -345,5 +359,13 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   scale: 10
-  mesh: {fileID: 10202, guid: 0000000000000000e000000000000000, type: 0}
+  meshes:
+  - {fileID: 10202, guid: 0000000000000000e000000000000000, type: 0}
+  - {fileID: 4300000, guid: 853d71b2460024bebac685e389b17015, type: 3}
+  - {fileID: 10208, guid: 0000000000000000e000000000000000, type: 0}
+  - {fileID: 10207, guid: 0000000000000000e000000000000000, type: 0}
+  - {fileID: 10206, guid: 0000000000000000e000000000000000, type: 0}
+  - {fileID: 4300000, guid: 43337656d6bf84f7f942f92a8d19798f, type: 3}
+  - {fileID: 4300000, guid: 89fad2af73b494d09a783172b25041da, type: 3}
+  selectedMesh: 0
   t: {fileID: 101973826}

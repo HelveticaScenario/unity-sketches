@@ -122,7 +122,7 @@ public class Pico : MonoBehaviour
         return Random.Range(0f, max);
     }
 
-    public unsafe void z(ulong start, ulong length, byte c)
+    public unsafe void memset(ulong start, ulong length, byte c)
     {
         if (start + length > (ulong)screenData.Length || length == 0)
         {
@@ -158,7 +158,7 @@ public class Pico : MonoBehaviour
 
     public unsafe void cls(byte c)
     {
-        z(0, (ulong)screenData.Length, c);
+        memset(0, (ulong)screenData.Length, c);
     }
     public unsafe void cls2(byte c)
     {
@@ -462,11 +462,11 @@ public class Pico : MonoBehaviour
     }
     void hline(int xl, int xr, int y, byte c)
     {
-        for (int i = xl; i <= xr; i++)
-        {
-            pset(i, y, c);
-        }
-        // memset(((ulong)y * (ulong)Width) + (ulong)xl, (ulong)(xr - xl + 1), c);
+        // for (int i = xl; i <= xr; i++)
+        // {
+        //     pset(i, y, c);
+        // }
+        memset(((ulong)y * (ulong)Width) + (ulong)xl, (ulong)(xr - xl + 1), c);
     }
     delegate void linePixelFunc(int x, int y, byte c);
 

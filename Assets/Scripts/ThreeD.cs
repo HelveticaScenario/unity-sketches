@@ -19,35 +19,52 @@ public class ThreeD : MonoBehaviour
     private Pico p;
     [Range(1.0f, 100.0f)]
     public float scale = 10.0f;
-    public Mesh mesh;
+    public Mesh[] meshes;
+    public uint selectedMesh = 0;
     public Transform t;
-    Tri[] tris;
+    Tri[][] tris;
 
     // Start is called before the first frame update
     void Start()
     {
         p = this.GetComponent<Pico>();
+
         p._init();
-        print(mesh.triangles.Length);
-        tris = new Tri[mesh.triangles.Length / 3];
-        for (int i = 0; i < mesh.triangles.Length / 3; i++)
+        updateTris();
+    }
+
+    void updateTris()
+    {
+        tris = new Tri[meshes.Length][];
+        for (int m = 0; m < meshes.Length; m++)
         {
-            var v1 = (t.rotation * mesh.vertices[mesh.triangles[(i * 3) + 0]]);
-            var v2 = (t.rotation * mesh.vertices[mesh.triangles[(i * 3) + 1]]);
-            var v3 = (t.rotation * mesh.vertices[mesh.triangles[(i * 3) + 2]]);
-            var U = v2 - v1;
-            var V = v3 - v1;
-            // Cross the vectors to get a perpendicular vector, then normalize it.
-            var norm = Vector3.Cross(U, V).normalized;
-
-            tris[i] = new Tri
+            var mesh = meshes[m];
+            tris[m] = new Tri[mesh.triangles.Length / 3];
+            for (int i = 0; i < mesh.triangles.Length / 3; i++)
             {
-                v1 = (v1 * scale) + t.position,
-                v2 = (v2 * scale) + t.position,
-                v3 = (v3 * scale) + t.position,
-                norm = norm
-            };
+                var v1 = (mesh.vertices[mesh.triangles[(i * 3) + 0]]);
+                var v2 = (mesh.vertices[mesh.triangles[(i * 3) + 1]]);
+                var v3 = (mesh.vertices[mesh.triangles[(i * 3) + 2]]);
+                var U = v2 - v1;
+                var V = v3 - v1;
+                // Cross the vectors to get a perpendicular vector, then normalize it.
+                var norm = Vector3.Cross(U, V).normalized;
 
+                var mx = (v1.x + v2.x + v3.x) / 3;
+                var my = (v1.y + v2.y + v3.y);
+                var mz = (v1.z + v2.z + v3.z) / 3;
+                var mean = new Vector3(mx, my, mz);
+
+                tris[m][i] = new Tri
+                {
+                    v1 = v1,
+                    v2 = v2,
+                    v3 = v3,
+                    mean = mean,
+                    norm = norm
+                };
+
+            }
         }
     }
     bool clockwise(Vector2 a, Vector2 b, Vector2 c) //tests if a triangle's points are clockwise oriented
@@ -69,45 +86,19 @@ public class ThreeD : MonoBehaviour
     // Update is called once per frame
     void Update()
     {
-        if (r)
-        {
-            return;
-        }
+
         p.cls(0);
-        Tri[] tris = new Tri[mesh.triangles.Length / 3];
-        for (int i = 0; i < mesh.triangles.Length / 3; i++)
+        var sel = (selectedMesh + Mathf.FloorToInt(Time.realtimeSinceStartup)) % tris.Length;
+        for (var i = 0; i < tris[sel].Length; i++)
         {
-            var v1 = (t.rotation * mesh.vertices[mesh.triangles[(i * 3) + 0]]);
-            var v2 = (t.rotation * mesh.vertices[mesh.triangles[(i * 3) + 1]]);
-            var v3 = (t.rotation * mesh.vertices[mesh.triangles[(i * 3) + 2]]);
-            var U = v2 - v1;
-            var V = v3 - v1;
-            // Cross the vectors to get a perpendicular vector, then normalize it.
-            var norm = Vector3.Cross(U, V).normalized;
-
-            tris[i] = new Tri
+            var tri = tris[sel][i];
+            var v1 = R((t.rotation * tri.v1 * scale) + t.position);
+            var v2 = R((t.rotation * tri.v2 * scale) + t.position);
+            var v3 = R((t.rotation * tri.v3 * scale) + t.position);
+            var mean = R((t.rotation * tri.mean * scale) + t.position);
+            if (!clockwise(v1, v2, v3))
             {
-                v1 = (v1 * scale) + t.position,
-                v2 = (v2 * scale) + t.position,
-                v3 = (v3 * scale) + t.position,
-                norm = norm
-            };
-
-        }
-
-        for (var i = 0; i < tris.Length; i++)
-        {
-            var tri = tris[i];
-            if (tri.norm.z <= 0)
-            {
-            }
-            else if (false)
-            {
-
-            }
-            else
-            {
-                p.trifill(R(tri.v1), R(tri.v2), R(tri.v3), (i % 15) + 1);
+                p.trifill(v1, v2, v3, (i % 15) + 1);
             }
             // p.line(new Vector2(p.Width / 2, p.Height / 2), R(((tri.norm * scale) + t.position)), (byte)(i % 16));
         }
