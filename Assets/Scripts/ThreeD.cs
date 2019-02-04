@@ -82,7 +82,7 @@ public class ThreeD : MonoBehaviour
         var Z = v.z;
         return new Vector2(w + X / Z * w, h + Y / Z * w);
     }
-    bool r = false;
+    // bool r = false;
     // Update is called once per frame
     void Update()
     {

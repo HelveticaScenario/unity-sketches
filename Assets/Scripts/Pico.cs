@@ -26,6 +26,10 @@ public class Pico : MonoBehaviour
     private bool paletteChanged = false;
     private bool initialized = false;
     private ClipRect clipRect;
+    
+    void Start() {
+        // QualitySettings.vSyncCount = 2;
+    }
 
     // private
     // Start is called before the first frame update
@@ -141,6 +145,7 @@ public class Pico : MonoBehaviour
         Unity.Collections.LowLevel.Unsafe.UnsafeUtility.MemCpyReplicate(d, s, 1, (int)length - 1);
         screenChanged = true;
     }
+
 
     public unsafe void memcpy(ulong source, ulong dest, ulong length)
     {
@@ -289,6 +294,19 @@ public class Pico : MonoBehaviour
     }
     public void rectfill(int x0, int y0, int x1, int y1, int color)
     {
+        rectfill(x0, y0, x1, y1, new int[] { color });
+    }
+    public void rectfill(int x0, int y0, int x1, int y1, int[] color)
+    {
+        if (color.Length == 0)
+        {
+            return;
+        }
+        byte[] c = new byte[color.Length];
+        for (int i = 0; i < color.Length; i++)
+        {
+            c[i] = wrapInt(color[i]);
+        }
         if (
             (y0 < (int)clipRect.t && y1 < (int)clipRect.t) ||
             (y0 >= (int)clipRect.b && y1 >= (int)clipRect.b) ||
@@ -298,7 +316,6 @@ public class Pico : MonoBehaviour
         {
             return;
         }
-        byte c = wrapInt(color);
         if (x0 > x1)
         {
             var tmp = x0;
@@ -460,7 +477,61 @@ public class Pico : MonoBehaviour
             color
         );
     }
-    void hline(int xl, int xr, int y, byte c)
+    public unsafe void hline(int x0, int x1, int y, byte[] cs)
+    {
+        if (
+            cs.Length == 0 ||
+            (x0 < clipRect.l && x1 < clipRect.l) ||
+            (x0 >= clipRect.r && x1 >= clipRect.r) ||
+            y < clipRect.t ||
+            y >= clipRect.b
+        )
+        {
+            return;
+        }
+
+        if (x0 > x1)
+        {
+            var tmp = x0;
+            x0 = x1;
+            x1 = tmp;
+        }
+
+        x0 = Mathf.Min(Mathf.Max(x0, clipRect.l), clipRect.r - 1);
+        x1 = Mathf.Min(Mathf.Max(x1, clipRect.l), clipRect.r - 1);
+        if (cs.Length == 1)
+        {
+            hline(x0, x1, y, cs[0]);
+            return;
+        }
+        else
+        {
+            var len = x1 - x0 + 1;
+            var rem = len % cs.Length;
+            len = len - rem;
+            len = len / cs.Length;
+            if (len > 0)
+            {
+                var ptr = Unity.Collections.LowLevel.Unsafe.NativeArrayUnsafeUtility.GetUnsafePtr(screenData);
+                for (int i = 0; i < cs.Length; i++)
+                {
+                    pset(i + x0, y, cs[i]);
+                }
+                ulong _s = (ulong)ptr + ((ulong)y * (ulong)Width) + (ulong)x0;
+                var s = (void*)_s;
+                ulong _d = _s + (ulong)cs.Length;
+                var d = (void*)_d;
+                Unity.Collections.LowLevel.Unsafe.UnsafeUtility.MemCpyReplicate(d, s, cs.Length, (int)len - 1);
+            }
+            for (int i = 0; i < rem; i++)
+            {
+                pset(len * cs.Length + i + x0, y, cs[i]);
+            }
+        }
+        screenChanged = true;
+    }
+
+    public void hline(int xl, int xr, int y, byte c)
     {
         // for (int i = xl; i <= xr; i++)
         // {

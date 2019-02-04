@@ -8,4 +8,16 @@ EditorBuildSettings:
   - enabled: 0
     path: 
     guid: 00000000000000000000000000000000
+  - enabled: 0
+    path: Assets/Scenes/Dithering.unity
+    guid: 2a0ce06c66a954102a66dad3c957710b
+  - enabled: 1
+    path: Assets/Scenes/PicoInterference.unity
+    guid: a2c2d8c71bcb74cacac6ad9c8e7eae5a
+  - enabled: 0
+    path: Assets/Scenes/PicoThreeD.unity
+    guid: 3fb6477c5bb0a49438d64e681ca495c8
+  - enabled: 0
+    path: Assets/Scenes/PicoTriangles.unity
+    guid: b9d6c7ff757924c008e9ed6ea1e043fa
   m_configObjects: {}
