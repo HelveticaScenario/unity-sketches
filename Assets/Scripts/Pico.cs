@@ -85,7 +85,8 @@ public class Pico : MonoBehaviour
             new Color32(41, 173, 255, 255), // 12 blue
             new Color32(131, 118, 156, 255), // 13 indigo
             new Color32(255, 119, 168, 255), // 14 pink
-            new Color32(255, 204, 170, 255) // 15 peach
+            new Color32(255, 204, 170, 255), // 15 peach
+            new Color32(0, 0, 0, 0), // 16 transparent
         };
         paletteData = palette.GetRawTextureData<Color32>();
         for (int i = 0; i < colors.Length; i++)
