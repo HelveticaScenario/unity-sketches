@@ -56,6 +56,8 @@
                 fixed index = tex2D (_MainTex, float2(i.uv.x, (i.uv.y - 1) * -1));
                 fixed iii = tex2D (_SwapTex, float2(index, 0));
                 fixed4 col = tex2D(_PaletteTex, float2(iii, 0));
+                // 1/256 ~= 0.0039
+                clip( col.a < 0.0039f ? -1:1 );
                 // apply fog
                 // UNITY_APPLY_FOG(i.fogCoord, col);
                 return col;

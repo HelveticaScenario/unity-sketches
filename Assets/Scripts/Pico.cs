@@ -13,6 +13,7 @@ public class Pico : MonoBehaviour
     }
     public uint Width;
     public uint Height;
+    public FilterMode filterMode;
     private Texture2D screen;
     private Texture2D palette;
     private Texture2D swap;
@@ -26,21 +27,44 @@ public class Pico : MonoBehaviour
     private bool paletteChanged = false;
     private bool initialized = false;
     private ClipRect clipRect;
-    
-    void Start() {
+    public Vector2? mousePosition { get; set; }
+    Camera m_MainCamera;
+    void Start()
+    {
+        m_MainCamera = Camera.main;
+        _init();
         // QualitySettings.vSyncCount = 2;
+    }
+
+    void Update()
+    {
+        if (m_MainCamera)
+        {
+            RaycastHit hit;
+            Ray ray = m_MainCamera.ScreenPointToRay(Input.mousePosition);
+            if (Physics.Raycast(ray, out hit) && hit.transform == this.transform)
+            {
+                var m = Vector2.Scale(hit.textureCoord, new Vector2(Width - 1, -(Height - 1)));
+                mousePosition = new Vector2(m.x, m.y + Height - 1);
+            }
+            else
+            {
+                mousePosition = null;
+            }
+        }
+
     }
 
     // private
     // Start is called before the first frame update
-    public void _init(FilterMode filterMode = FilterMode.Point)
+    public void _init(FilterMode _filterMode = FilterMode.Point)
     {
         if (initialized)
         {
             return;
         }
         screen = new Texture2D((int)Width, (int)Height, TextureFormat.R8, false, false);
-        screen.filterMode = filterMode;
+        screen.filterMode = this.filterMode;
         swap = new Texture2D(256, 1, TextureFormat.R8, false, false);
         swap.filterMode = FilterMode.Point;
         palette = new Texture2D(256, 1, TextureFormat.RGBA32, false, false);
@@ -161,32 +185,33 @@ public class Pico : MonoBehaviour
         screenChanged = true;
     }
 
-    public unsafe void cls(byte c)
+    public unsafe void cls(int c)
     {
-        memset(0, (ulong)screenData.Length, c);
+        memset(0, (ulong)screenData.Length, wrapInt(c));
     }
-    public unsafe void cls2(byte c)
+    public unsafe void cls2(int c)
     {
         for (int i = 0; i < screenData.Length; i++)
         {
-            screenData[i] = c;
+            screenData[i] = wrapInt(c);
         }
         screenChanged = true;
     }
 
-    public void pset(int x, int y, byte c)
+    public void pset(int x, int y, int c)
     {
         if (x < clipRect.l || y < clipRect.t || x >= clipRect.r || y >= clipRect.b)
         {
             return;
         };
+
         // y = (y - (int)Height) * -1;
 
-        screenData[(int)((y * Width) + x)] = c;
+        screenData[(int)((y * Width) + x)] = wrapInt(c);
         screenChanged = true;
     }
 
-    public void pset(Vector2 v, byte c)
+    public void pset(Vector2 v, int c)
     {
         pset(
             Mathf.RoundToInt(v.x),
@@ -195,7 +220,7 @@ public class Pico : MonoBehaviour
         );
     }
 
-    byte pget(int x, int y)
+    int pget(int x, int y)
     {
         if (x < 0 || y < 0 || x >= Width || y >= Height)
         {
@@ -218,7 +243,7 @@ public class Pico : MonoBehaviour
         if (clipRect.b > Height) clipRect.b = (int)Height;
     }
 
-    void triPixelFunc(int x, int y, byte color)
+    void triPixelFunc(int x, int y, int color)
     {
         // if (x < clipRect.l || y < clipRect.t || x >= clipRect.r || y >= clipRect.b)
         // {
@@ -302,7 +327,7 @@ public class Pico : MonoBehaviour
         {
             return;
         }
-        byte[] c = new byte[color.Length];
+        int[] c = new int[color.Length];
         for (int i = 0; i < color.Length; i++)
         {
             c[i] = wrapInt(color[i]);
@@ -404,7 +429,7 @@ public class Pico : MonoBehaviour
         );
     }
 
-    public void circ(int x, int y, uint radius, byte color)
+    public void circ(int x, int y, uint radius, int color)
     {
         int r = (int)radius;
         int _x = -r, _y = 0, err = 2 - 2 * r;
@@ -419,7 +444,7 @@ public class Pico : MonoBehaviour
             if (r > _x || err > _y) err += ++_x * 2 + 1;
         } while (_x < 0);
     }
-    public void circ(Vector2 v, uint radius, byte color)
+    public void circ(Vector2 v, uint radius, int color)
     {
         circ(
             Mathf.RoundToInt(v.x),
@@ -428,7 +453,8 @@ public class Pico : MonoBehaviour
             color
         );
     }
-    public void circfill(int xm, int ym, uint radius, byte color)
+   
+    public void circfill(int xm, int ym, uint radius, int color)
     {
         if (radius <= 0)
         {
@@ -459,7 +485,7 @@ public class Pico : MonoBehaviour
 
         int yt = Mathf.Max(0, ym - (int)radius);
         int yb = Mathf.Min((int)Height, ym + (int)radius + 1);
-        byte final_color = color;
+        int final_color = color;
         for (int _y = yt; _y < yb; _y++)
         {
             int xl = Mathf.Max(SidesBufferLeft[_y], clipRect.l);
@@ -468,7 +494,7 @@ public class Pico : MonoBehaviour
         }
     }
 
-    public void circfill(Vector2 v, uint radius, byte color)
+    public void circfill(Vector2 v, uint radius, int color)
     {
         circfill(
             Mathf.RoundToInt(v.x),
@@ -477,7 +503,7 @@ public class Pico : MonoBehaviour
             color
         );
     }
-    public unsafe void hline(int x0, int x1, int y, byte[] cs)
+    public unsafe void hline(int x0, int x1, int y, int[] cs)
     {
         if (
             cs.Length == 0 ||
@@ -531,21 +557,21 @@ public class Pico : MonoBehaviour
         screenChanged = true;
     }
 
-    public void hline(int xl, int xr, int y, byte c)
+    public void hline(int xl, int xr, int y, int c)
     {
         // for (int i = xl; i <= xr; i++)
         // {
         //     pset(i, y, c);
         // }
-        memset(((ulong)y * (ulong)Width) + (ulong)xl, (ulong)(xr - xl + 1), c);
+        memset(((ulong)y * (ulong)Width) + (ulong)xl, (ulong)(xr - xl + 1), wrapInt(c));
     }
-    delegate void linePixelFunc(int x, int y, byte c);
+    delegate void linePixelFunc(int x, int y, int c);
 
     public void line(int x0, int y0, int x1, int y1, int c)
     {
         _line(x0, y0, x1, y1, c, pset);
     }
-    public void line(Vector2 v1, Vector2 v2, byte color)
+    public void line(Vector2 v1, Vector2 v2, int color)
     {
         _line(
             Mathf.RoundToInt(v1.x),

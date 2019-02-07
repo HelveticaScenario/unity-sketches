@@ -20,9 +20,10 @@ public class Dithering : MonoBehaviour
     // Update is called once per frame
     void Update()
     {
-        if (r) {
+        if (r)
+        {
             return;
-        }   
+        }
         // r = true;
         p.cls(0);
         var s = Mathf.RoundToInt(Time.realtimeSinceStartup * speed);
@@ -30,46 +31,46 @@ public class Dithering : MonoBehaviour
         {
             if (y % 2 == 0)
             {
-                p.hline(0, (int)p.Width - 1, ((y * 4 + 0) + s) % (int)p.Height, new byte[] {
-                    (byte)(y / 2 % 15 + 1)
+                p.hline(0, (int)p.Width - 1, ((y * 4 + 0) + s) % (int)p.Height, new int[] {
+                    (int)(y / 2 % 15 + 1)
                 });
-                p.hline(0, (int)p.Width - 1, ((y * 4 + 1) + s) % (int)p.Height, new byte[] {
-                    (byte)(y / 2 % 15 + 1)
+                p.hline(0, (int)p.Width - 1, ((y * 4 + 1) + s) % (int)p.Height, new int[] {
+                    (int)(y / 2 % 15 + 1)
                 });
-                p.hline(0, (int)p.Width - 1, ((y * 4 + 2) + s) % (int)p.Height, new byte[] {
-                    (byte)(y / 2 % 15 + 1)
+                p.hline(0, (int)p.Width - 1, ((y * 4 + 2) + s) % (int)p.Height, new int[] {
+                    (int)(y / 2 % 15 + 1)
                 });
-                p.hline(0, (int)p.Width - 1, ((y * 4 + 3) + s) % (int)p.Height, new byte[] {
-                    (byte)(y / 2 % 15 + 1)
+                p.hline(0, (int)p.Width - 1, ((y * 4 + 3) + s) % (int)p.Height, new int[] {
+                    (int)(y / 2 % 15 + 1)
                 });
             }
             else
             {
                 var q = (float)y / 2.0f;
 
-                p.hline(0, (int)p.Width - 1, ((y * 4 + 0) + s) % (int)p.Height, new byte[] {
-                    (byte)(Mathf.FloorToInt(q) % 15 + 1),
-                    (byte)(Mathf.FloorToInt(q) % 15 + 1),
-                    (byte)(Mathf.CeilToInt(q) % 15 + 1),
-                    (byte)(Mathf.CeilToInt(q) % 15 + 1),
+                p.hline(0, (int)p.Width - 1, ((y * 4 + 0) + s) % (int)p.Height, new int[] {
+                    (int)(Mathf.FloorToInt(q) % 15 + 1),
+                    (int)(Mathf.FloorToInt(q) % 15 + 1),
+                    (int)(Mathf.CeilToInt(q) % 15 + 1),
+                    (int)(Mathf.CeilToInt(q) % 15 + 1),
                 });
-                p.hline(0, (int)p.Width - 1, ((y * 4 + 1) + s) % (int)p.Height, new byte[] {
-                    (byte)(Mathf.FloorToInt(q) % 15 + 1),
-                    (byte)(Mathf.FloorToInt(q) % 15 + 1),
-                    (byte)(Mathf.CeilToInt(q) % 15 + 1),
-                    (byte)(Mathf.CeilToInt(q) % 15 + 1),
+                p.hline(0, (int)p.Width - 1, ((y * 4 + 1) + s) % (int)p.Height, new int[] {
+                    (int)(Mathf.FloorToInt(q) % 15 + 1),
+                    (int)(Mathf.FloorToInt(q) % 15 + 1),
+                    (int)(Mathf.CeilToInt(q) % 15 + 1),
+                    (int)(Mathf.CeilToInt(q) % 15 + 1),
                 });
-                p.hline(0, (int)p.Width - 1, ((y * 4 + 2) + s) % (int)p.Height, new byte[] {
-                    (byte)(Mathf.FloorToInt(q) % 15 + 1),
-                    (byte)(Mathf.FloorToInt(q) % 15 + 1),
-                    (byte)(Mathf.CeilToInt(q) % 15 + 1),
-                    (byte)(Mathf.CeilToInt(q) % 15 + 1),
+                p.hline(0, (int)p.Width - 1, ((y * 4 + 2) + s) % (int)p.Height, new int[] {
+                    (int)(Mathf.FloorToInt(q) % 15 + 1),
+                    (int)(Mathf.FloorToInt(q) % 15 + 1),
+                    (int)(Mathf.CeilToInt(q) % 15 + 1),
+                    (int)(Mathf.CeilToInt(q) % 15 + 1),
                 });
-                p.hline(0, (int)p.Width - 1, ((y * 4 + 3) + s) % (int)p.Height, new byte[] {
-                    (byte)(Mathf.FloorToInt(q) % 15 + 1),
-                    (byte)(Mathf.FloorToInt(q) % 15 + 1),
-                    (byte)(Mathf.CeilToInt(q) % 15 + 1),
-                    (byte)(Mathf.CeilToInt(q) % 15 + 1),
+                p.hline(0, (int)p.Width - 1, ((y * 4 + 3) + s) % (int)p.Height, new int[] {
+                    (int)(Mathf.FloorToInt(q) % 15 + 1),
+                    (int)(Mathf.FloorToInt(q) % 15 + 1),
+                    (int)(Mathf.CeilToInt(q) % 15 + 1),
+                    (int)(Mathf.CeilToInt(q) % 15 + 1),
                 });
             }
         }

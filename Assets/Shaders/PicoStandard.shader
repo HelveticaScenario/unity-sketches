@@ -17,6 +17,7 @@
         CGPROGRAM
         // Physically based Standard lighting model, and enable shadows on all light types
         #pragma surface surf Standard fullforwardshadows
+        
 
         // Use shader model 3.0 target, to get nicer looking lighting
         #pragma target 3.0
@@ -43,9 +44,11 @@
 
         void surf (Input IN, inout SurfaceOutputStandard o)
         {
-            fixed index = tex2D (_MainTex, IN.uv_MainTex);
+            fixed index = tex2D (_MainTex, float2(IN.uv_MainTex.x, (IN.uv_MainTex.y - 1) * -1));
             fixed iii = tex2D (_SwapTex, float2(index, 0));
             fixed4 c = tex2D(_PaletteTex, float2(iii, 0));
+            // 1/256 ~= 0.0039
+            clip( c.a < 0.0039f ? -1:1 );
             o.Albedo = c.rgb;
             o.Metallic = _Metallic;
             o.Smoothness = _Glossiness;
