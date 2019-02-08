@@ -221,6 +221,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   Width: 240
   Height: 136
+  filterMode: 1
 --- !u!64 &1249118875
 MeshCollider:
   m_ObjectHideFlags: 0

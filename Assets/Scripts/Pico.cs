@@ -186,7 +186,7 @@ public class Pico : MonoBehaviour
         screenChanged = true;
     }
 
-    public unsafe void cls(int c)
+    public unsafe void cls(int c = 0)
     {
         memset(0, (ulong)screenData.Length, wrapInt(c));
     }

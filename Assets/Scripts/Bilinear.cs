@@ -11,7 +11,7 @@ public class Bilinear : MonoBehaviour
     }
     Dim gridDim = new Dim { width = 3, height = 3 };
     float[,] grid;
-    float changeBy = 0.005f;
+    public float changeBy = 0.005f;
 
     private Pico p;
     public uint radius = 1;
@@ -148,7 +148,7 @@ public class Bilinear : MonoBehaviour
                 }
             }
         }
-        e += changeBy;
+        e += Time.deltaTime * changeBy;
         e = wrap(e);
 
         p.flip();
