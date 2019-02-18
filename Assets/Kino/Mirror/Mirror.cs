@@ -34,9 +34,9 @@ namespace Kino
         [SerializeField]
         int _repeat;
 
-        public float repeat  {
+        public int repeat  {
             get { return _repeat; }
-            set { _repeat = (int)value; }
+            set { _repeat = value; }
         }
 
         [SerializeField]
@@ -57,6 +57,11 @@ namespace Kino
 
         [SerializeField]
         bool _symmetry;
+
+        public bool symmetry {
+            get { return _symmetry; }
+            set { _symmetry = value; }
+        }
 
         #endregion
 
