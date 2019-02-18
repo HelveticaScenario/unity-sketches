@@ -14,12 +14,15 @@ public class Pico : MonoBehaviour
     public uint Width;
     public uint Height;
     public FilterMode filterMode;
+    public Texture2D spritesheet;
+    private Texture2D spritesheetIndexed;
     private Texture2D screen;
     private Texture2D palette;
     private Texture2D swap;
     private Unity.Collections.NativeArray<byte> screenData;
     private Unity.Collections.NativeArray<byte> swapData;
     private Unity.Collections.NativeArray<Color32> paletteData;
+    private Unity.Collections.NativeArray<byte> spritesheetIndexedData;
     private int[] SidesBufferLeft;
     private int[] SidesBufferRight;
     private bool screenChanged = false;
@@ -59,6 +62,10 @@ public class Pico : MonoBehaviour
     // Start is called before the first frame update
     public void _init(FilterMode _filterMode = FilterMode.Point)
     {
+        if (spritesheet.height != 256 || spritesheet.width != 256)
+        {
+            throw new System.ArgumentException();
+        }
         if (initialized)
         {
             return;
@@ -88,6 +95,7 @@ public class Pico : MonoBehaviour
             new Color32(255, 204, 170, 255), // 15 peach
             new Color32(0, 0, 0, 0), // 16 transparent
         };
+
         paletteData = palette.GetRawTextureData<Color32>();
         for (int i = 0; i < colors.Length; i++)
         {
@@ -117,7 +125,46 @@ public class Pico : MonoBehaviour
 
         clipRect = new ClipRect { l = 0, t = 0, r = (int)Width, b = (int)Height };
 
+        Dictionary<Color32, byte> colorMap = new Dictionary<Color32, byte>();
+        for (int i = 0; i < colors.Length; i++)
+        {
+            colorMap.Add(colors[i], (byte)i);
+        }
+
+        spritesheetIndexed = new Texture2D(spritesheet.width, spritesheet.height, TextureFormat.R8, false, false);
+        spritesheetIndexed.filterMode = FilterMode.Point;
+        spritesheetIndexedData = spritesheetIndexed.GetRawTextureData<byte>();
+        var spritesheetData = spritesheet.GetPixels32(0);
+
+        int counter = colorMap.Count;
+        for (int i = 0; i < spritesheetData.Length; i++)
+        {
+            byte index;
+            if (!colorMap.TryGetValue(spritesheetData[i], out index))
+            {
+                index = (byte)counter;
+                colorMap.Add(spritesheetData[i], index);
+                paletteData[index] = spritesheetData[i];
+                counter += 1;
+            }
+            var corrected = indexToVector2Int(i, spritesheet.width, spritesheet.height);
+            corrected = new Vector2Int(corrected.x, Mathf.Abs(corrected.y - (spritesheet.height - 1)));
+
+            spritesheetIndexedData[vector2IntToIndex(corrected, spritesheet.width, spritesheet.height)] = index;
+        }
+        spritesheetIndexed.Apply();
+        palette.Apply();
+
         initialized = true;
+    }
+
+    Vector2Int indexToVector2Int(int index, int width, int height)
+    {
+        return new Vector2Int(index % width, index / height);
+    }
+    int vector2IntToIndex(Vector2Int v, int width, int height)
+    {
+        return v.x + (v.y * height);
     }
 
     void initSidesBuffer()
@@ -454,7 +501,7 @@ public class Pico : MonoBehaviour
             color
         );
     }
-   
+
     public void circfill(int xm, int ym, uint radius, int color)
     {
         if (radius <= 0)
@@ -632,6 +679,48 @@ public class Pico : MonoBehaviour
         }
         screenChanged = true;
     }
+
+    public void spr(uint n, int x, int y, uint scaleX = 1, uint scaleY = 1, uint w = 1, uint h = 1)
+    {
+        int srcx = (int)n % (spritesheetIndexed.width / 8) * 8;
+        int srcy = (int)n / (spritesheetIndexed.height / 8) * 8;
+        for (int _y = 0; _y < (8 * h * scaleY); _y++)
+        {
+            for (int _x = 0; _x < (8 * w * scaleX); _x++)
+            {
+                psetFromSprite((srcx + _x) / (int)scaleX, (srcy + _y) / (int)scaleY, x + _x, y + _y);
+            }
+        }
+    }
+    public void spr(uint n, Vector2 v, uint scaleX = 1, uint scaleY = 1, uint w = 1, uint h = 1)
+    {
+        spr(
+             n,
+             Mathf.RoundToInt(v.x),
+             Mathf.RoundToInt(v.y),
+             scaleX,
+             scaleY,
+             w,
+             h
+         );
+    }
+
+
+    void psetFromSprite(int srcx, int srcy, int destx, int desty)
+    {
+        if (destx < clipRect.l || desty < clipRect.t || destx >= clipRect.r || desty >= clipRect.b)
+        {
+            return;
+        };
+        if (srcx < 0 || srcx >= spritesheet.width || srcy < 0 || srcy >= spritesheet.height)
+        {
+            return;
+        }
+
+        screenData[(int)((desty * Width) + destx)] = spritesheetIndexedData[(int)((srcy * spritesheet.width) + srcx)];
+        screenChanged = true;
+    }
+
     public byte randomColor()
     {
         return (byte)Random.Range(0, 16);
