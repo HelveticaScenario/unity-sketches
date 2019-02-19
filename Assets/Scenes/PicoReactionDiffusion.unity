@@ -206,7 +206,6 @@ GameObject:
   - component: {fileID: 1850239126}
   - component: {fileID: 1850239125}
   - component: {fileID: 1850239124}
-  - component: {fileID: 1850239123}
   - component: {fileID: 1850239128}
   m_Layer: 0
   m_Name: Quad
@@ -215,30 +214,6 @@ GameObject:
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
   m_IsActive: 1
---- !u!114 &1850239123
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 1850239122}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: a002e3e423af24e0fa68e6de9bafa890, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
-  Width: 128
-  Height: 128
-  filterMode: 1
-  spritesheet: {fileID: 2800000, guid: 6d987d532ec5e4a2e84ee63220576ec7, type: 3}
-  a:
-    serializedVersion: 2
-    m_Curve: []
-    m_PreInfinity: 2
-    m_PostInfinity: 2
-    m_RotationOrder: 4
-  chance: 1
-  dither: 0
 --- !u!64 &1850239124
 MeshCollider:
   m_ObjectHideFlags: 0
@@ -270,7 +245,7 @@ MeshRenderer:
   m_RenderingLayerMask: 1
   m_RendererPriority: 0
   m_Materials:
-  - {fileID: 2100000, guid: 874bb232569f04674abda8f2832fd5eb, type: 2}
+  - {fileID: 2100000, guid: c9da0606e3cb54285b34fec2c189a741, type: 2}
   m_StaticBatchInfo:
     firstSubMesh: 0
     subMeshCount: 0
@@ -326,6 +301,10 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   Da: 1
   Db: 0.5
-  f: 0.055
-  k: 0.062
+  f: 0.0367
+  k: 0.0649
   compute: {fileID: 7200000, guid: 59c9b4c19fa5f4dbfb1b31688b24eb92, type: 3}
+  T: 12
+  colorA: {r: 0.51990646, g: 0.504717, b: 1, a: 0}
+  colorB: {r: 0, g: 1, b: 0.991797, a: 0}
+  pow: 8

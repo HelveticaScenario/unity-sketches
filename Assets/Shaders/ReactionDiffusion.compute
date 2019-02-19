@@ -12,10 +12,14 @@ float k;
 float centerWeight;
 float adjacentWeight;
 float diagonalWeight;
+float4 colorA;
+float4 colorB;
 StructuredBuffer<float> SourceA;
 StructuredBuffer<float> SourceB;
 RWStructuredBuffer<float> DestA;
 RWStructuredBuffer<float> DestB;
+RWTexture2D<float4> Screen;
+// Texture2D<float4> Colors;
 
 
 
@@ -77,4 +81,7 @@ void CSMain (uint3 id : SV_DispatchThreadID)
     B += ((Db * convolveB(id.x, id.y)) + (A * B * B) - ((k + f) * B));
     DestA[id.x + (id.y * w)] = clamp(A, 0, 1);
     DestB[id.x + (id.y * w)] = clamp(B, 0, 1);
+    float v = (A / (A + B));
+    Screen[id.xy] = lerp(colorA, colorB, float4(v,v,v,v));
+
 }
