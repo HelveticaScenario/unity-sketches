@@ -1,0 +1,80 @@
+﻿// Each #kernel tells which function to compile; you can have many kernels
+#pragma kernel CSMain
+
+// Create a RenderTexture with enableRandomWrite flag and set it
+// with cs.SetTexture
+int w;
+int h;
+float Da;
+float Db;
+float f;
+float k;
+float centerWeight;
+float adjacentWeight;
+float diagonalWeight;
+StructuredBuffer<float> SourceA;
+StructuredBuffer<float> SourceB;
+RWStructuredBuffer<float> DestA;
+RWStructuredBuffer<float> DestB;
+
+
+
+float convolveA(int x, int y)
+{
+    float v = 0;
+    for (int _x = (x - 1) < 0 ? 0 : (x - 1); _x <= x + 1 && _x < w; _x++)
+    {
+        for (int _y = (y - 1) < 0 ? 0 : (y - 1); _y <= y + 1 && _y < h; _y++)
+        {
+            if (_x == x && _y == y)
+            {
+                v = v + SourceA[_x + (_y*w)] * centerWeight;
+            }
+            else if (_x == x || _y == y)
+            {
+                v = v + SourceA[_x + (_y*w)] * adjacentWeight;
+            }
+            else
+            {
+                v = v + SourceA[_x + (_y*w)] * diagonalWeight;
+            }
+        }
+    }
+    return v;
+}
+
+float convolveB(int x, int y)
+{
+    float v = 0;
+    for (int _x = (x - 1) < 0 ? 0 : (x - 1); _x <= x + 1 && _x < w; _x++)
+    {
+        for (int _y = (y - 1) < 0 ? 0 : (y - 1); _y <= y + 1 && _y < h; _y++)
+        {
+            if (_x == x && _y == y)
+            {
+                v = v + SourceB[_x + (_y*w)] * centerWeight;
+            }
+            else if (_x == x || _y == y)
+            {
+                v = v + SourceB[_x + (_y*w)] * adjacentWeight;
+            }
+            else
+            {
+                v = v + SourceB[_x + (_y*w)] * diagonalWeight;
+            }
+        }
+    }
+    return v;
+}
+
+[numthreads(8,8,1)]
+void CSMain (uint3 id : SV_DispatchThreadID)
+{
+    // TODO: insert actual code here!
+    float A = SourceA[id.x + (id.y * w)];
+    float B = SourceB[id.x + (id.y * w)];
+    A += ((Da * convolveA(id.x, id.y)) - (A * B * B) + (f * (1 - A)));
+    B += ((Db * convolveB(id.x, id.y)) + (A * B * B) - ((k + f) * B));
+    DestA[id.x + (id.y * w)] = clamp(A, 0, 1);
+    DestB[id.x + (id.y * w)] = clamp(B, 0, 1);
+}

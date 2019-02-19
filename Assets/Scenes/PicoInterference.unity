@@ -186,6 +186,55 @@ PrefabInstance:
       objectReference: {fileID: 0}
     m_RemovedComponents: []
   m_SourcePrefab: {fileID: 100100000, guid: e4f3ff9d343814042af8505d22b10519, type: 3}
+--- !u!1 &870670273
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 870670275}
+  - component: {fileID: 870670274}
+  m_Layer: 0
+  m_Name: MIDI Source
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!114 &870670274
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 870670273}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 2a4497c057d3c484d9964ddcf23f3d21, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  _endpointId: 1959790498
+  _endpointName: OP-Z
+  _autoConnect: 0
+  _preferredName: 
+  _midiMap: {fileID: 0}
+  _autoAssignMap: 1
+--- !u!4 &870670275
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 870670273}
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: 0, y: 0, z: 0}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_Children: []
+  m_Father: {fileID: 0}
+  m_RootOrder: 3
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!1 &1249118873
 GameObject:
   m_ObjectHideFlags: 0
@@ -222,6 +271,9 @@ MonoBehaviour:
   Width: 240
   Height: 136
   filterMode: 1
+  spritesheet: {fileID: 2800000, guid: 6d987d532ec5e4a2e84ee63220576ec7, type: 3}
+  chance: 1
+  dither: 1
 --- !u!64 &1249118875
 MeshCollider:
   m_ObjectHideFlags: 0
@@ -319,6 +371,7 @@ MonoBehaviour:
   mag: 10
   insideColor: 7
   outsideColor: 12
+  chance: 0.5
 --- !u!1 &2064143557
 GameObject:
   m_ObjectHideFlags: 0

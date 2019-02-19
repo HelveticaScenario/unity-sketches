@@ -86,7 +86,7 @@ public class Bilinear : MonoBehaviour
     // Update is called once per frame
     void Update()
     {
-        p.cls(0);
+        // p.cls(0);
 
         // var inner_range_row = Mathf.Floor(32.0f / (grid_dim.height - 1)) - 1;
 

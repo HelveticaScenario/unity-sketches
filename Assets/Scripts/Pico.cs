@@ -30,7 +30,13 @@ public class Pico : MonoBehaviour
     private bool paletteChanged = false;
     private bool initialized = false;
     private ClipRect clipRect;
+    public AnimationCurve a;
     public Vector2? mousePosition { get; set; }
+    [Range(0.0f, 1.0f)]
+    public float chance = 1.0f;
+    public float Chance { get { return chance; } set { chance = value; } }
+    public bool dither = false;
+    public bool Dither { get { return dither; } set { dither = value; } }
     Camera m_MainCamera;
     void Start()
     {
@@ -95,6 +101,11 @@ public class Pico : MonoBehaviour
             new Color32(255, 204, 170, 255), // 15 peach
             new Color32(0, 0, 0, 0), // 16 transparent
         };
+        // for (byte i = 0; i < 16; i++)
+        // {
+        //     byte v = (byte)Mathf.FloorToInt(Mathf.Clamp(a.Evaluate((float)i / 15.0f), 0, 1) * 255);
+        //     colors[i] = new Color32(v, v, v, 255);
+        // }
 
         paletteData = palette.GetRawTextureData<Color32>();
         for (int i = 0; i < colors.Length; i++)
@@ -125,35 +136,44 @@ public class Pico : MonoBehaviour
 
         clipRect = new ClipRect { l = 0, t = 0, r = (int)Width, b = (int)Height };
 
-        Dictionary<Color32, byte> colorMap = new Dictionary<Color32, byte>();
-        for (int i = 0; i < colors.Length; i++)
-        {
-            colorMap.Add(colors[i], (byte)i);
-        }
 
-        spritesheetIndexed = new Texture2D(spritesheet.width, spritesheet.height, TextureFormat.R8, false, false);
-        spritesheetIndexed.filterMode = FilterMode.Point;
-        spritesheetIndexedData = spritesheetIndexed.GetRawTextureData<byte>();
-        var spritesheetData = spritesheet.GetPixels32(0);
-
-        int counter = colorMap.Count;
-        for (int i = 0; i < spritesheetData.Length; i++)
+        if (spritesheet != null)
         {
-            byte index;
-            if (!colorMap.TryGetValue(spritesheetData[i], out index))
+            spritesheetIndexed = new Texture2D(spritesheet.width, spritesheet.height, TextureFormat.R8, false, false);
+            spritesheetIndexed.filterMode = FilterMode.Point;
+            spritesheetIndexedData = spritesheetIndexed.GetRawTextureData<byte>();
+            var spritesheetData = spritesheet.GetPixels32(0);
+
+            Dictionary<Color32, byte> colorMap = new Dictionary<Color32, byte>();
+            for (int i = 0; i < colors.Length; i++)
             {
-                index = (byte)counter;
-                colorMap.Add(spritesheetData[i], index);
-                paletteData[index] = spritesheetData[i];
-                counter += 1;
+                colorMap.Add(colors[i], (byte)i);
             }
-            var corrected = indexToVector2Int(i, spritesheet.width, spritesheet.height);
-            corrected = new Vector2Int(corrected.x, Mathf.Abs(corrected.y - (spritesheet.height - 1)));
+            int counter = colorMap.Count;
+            for (int i = 0; i < spritesheetData.Length; i++)
+            {
+                byte index;
+                if (!colorMap.TryGetValue(spritesheetData[i], out index))
+                {
+                    index = (byte)counter;
+                    colorMap.Add(spritesheetData[i], index);
+                    paletteData[index] = spritesheetData[i];
+                    counter += 1;
+                }
+                var corrected = indexToVector2Int(i, spritesheet.width, spritesheet.height);
+                corrected = new Vector2Int(corrected.x, Mathf.Abs(corrected.y - (spritesheet.height - 1)));
 
-            spritesheetIndexedData[vector2IntToIndex(corrected, spritesheet.width, spritesheet.height)] = index;
+                spritesheetIndexedData[vector2IntToIndex(corrected, spritesheet.width, spritesheet.height)] = index;
+            }
+            spritesheetIndexed.Apply();
+            palette.Apply();
         }
-        spritesheetIndexed.Apply();
-        palette.Apply();
+        else
+        {
+            spritesheetIndexed = new Texture2D(256, 256, TextureFormat.R8, false, false);
+            spritesheetIndexed.filterMode = FilterMode.Point;
+            spritesheetIndexedData = spritesheetIndexed.GetRawTextureData<byte>();
+        }
 
         initialized = true;
     }
@@ -248,6 +268,10 @@ public class Pico : MonoBehaviour
 
     public void pset(int x, int y, int c)
     {
+        if (dither && Random.value > chance)
+        {
+            return;
+        }
         if (x < clipRect.l || y < clipRect.t || x >= clipRect.r || y >= clipRect.b)
         {
             return;
@@ -607,11 +631,18 @@ public class Pico : MonoBehaviour
 
     public void hline(int xl, int xr, int y, int c)
     {
-        // for (int i = xl; i <= xr; i++)
-        // {
-        //     pset(i, y, c);
-        // }
-        memset(((ulong)y * (ulong)Width) + (ulong)xl, (ulong)(xr - xl + 1), wrapInt(c));
+
+        if (dither)
+        {
+            for (int i = xl; i <= xr; i++)
+            {
+                pset(i, y, c);
+            }
+        }
+        else
+        {
+            memset(((ulong)y * (ulong)Width) + (ulong)xl, (ulong)(xr - xl + 1), wrapInt(c));
+        }
     }
     delegate void linePixelFunc(int x, int y, int c);
 
@@ -708,6 +739,10 @@ public class Pico : MonoBehaviour
 
     void psetFromSprite(int srcx, int srcy, int destx, int desty)
     {
+        if (dither && Random.value > chance)
+        {
+            return;
+        }
         if (destx < clipRect.l || desty < clipRect.t || destx >= clipRect.r || desty >= clipRect.b)
         {
             return;

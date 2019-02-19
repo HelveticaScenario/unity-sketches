@@ -69,7 +69,7 @@ public class Triangles : MonoBehaviour
     // Update is called once per frame
     void Update()
     {
-        p.cls(0);
+        // p.cls(0);
         // for (int x = 0; x < p.Width-1; x += 28)
         // {
         //     for (int y = 0; y < p.Height-1; x += 28)
