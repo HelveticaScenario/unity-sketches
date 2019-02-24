@@ -89,7 +89,9 @@ public class PicoReactionDiffusion : MonoBehaviour
         Screen.enableRandomWrite = true;
         Screen.Create();
         Renderer renderer = GetComponent<Renderer>();
-        renderer.material.mainTexture = Screen;
+        renderer.material.SetTexture("_MainTex", Screen);
+        renderer.material.SetTexture("_BumpMap", Screen);
+        renderer.material.SetTexture("_ParallaxMap", Screen);
         // Colors = new Texture2D(w,h,TextureFormat.RGBA);
         // colorsBuff = new ComputeBuffer(w * h, sizeof(int));
         arrA = new float[w * h];
@@ -170,6 +172,38 @@ public class PicoReactionDiffusion : MonoBehaviour
     // }
 
 
+    private void _line(Vector2 v0, Vector2 v1, ref float[] arr, bool remove = false)
+    {
+        int x0 = (int)v0.x;
+        int y0 = (int)v0.y;
+        int x1 = (int)v1.x;
+        int y1 = (int)v1.y;
+        if (y0 == y1)
+        {
+            if (x0 == x1)
+            {
+                arr[x0 + (y0 * w)] = remove ? 0.0f : 1.0f;
+                return;
+            }
+        }
+
+        var dx = Mathf.Abs(x1 - x0);
+        var dy = Mathf.Abs(y1 - y0);
+        var sx = (x0 < x1) ? 1 : -1;
+        var sy = (y0 < y1) ? 1 : -1;
+        var err = dx - dy;
+        while (true)
+        {
+            arr[x0 + (y0 * w)] = remove ? 0.0f : 1.0f;
+
+            if ((x0 == x1) && (y0 == y1)) break;
+            var e2 = 2 * err;
+            if (e2 > -dy) { err -= dy; x0 += sx; }
+            if (e2 < dx) { err += dx; y0 += sy; }
+        }
+    }
+
+    Vector2? lastFrame;
     // Update is called once per frame
     void Update()
     {
@@ -214,12 +248,20 @@ public class PicoReactionDiffusion : MonoBehaviour
             if (useBack)
             {
                 backBuffB.GetData(arrB);
-                for (int _x = (x - 1) < 0 ? 0 : (x - 1); _x <= x + 1 && _x < w; _x++)
+                // for (int _x = (x - 1) < 0 ? 0 : (x - 1); _x <= x + 1 && _x < w; _x++)
+                // {
+                //     for (int _y = (y - 1) < 0 ? 0 : (y - 1); _y <= y + 1 && _y < h; _y++)
+                //     {
+                //         arrB[_x + (y * w)] = Input.GetMouseButton(0) ? 1 : 0;
+                //     }
+                // }
+                if (lastFrame.HasValue)
                 {
-                    for (int _y = (y - 1) < 0 ? 0 : (y - 1); _y <= y + 1 && _y < h; _y++)
-                    {
-                        arrB[_x + (y * w)] = Input.GetMouseButton(0) ? 1 : 0;
-                    }
+                    _line(mousePosition.Value, lastFrame.Value, ref arrB, !Input.GetMouseButton(0));
+                }
+                else
+                {
+                    _line(mousePosition.Value, mousePosition.Value, ref arrB, !Input.GetMouseButton(0));
                 }
                 // arrB[Mathf.FloorToInt(m.x) + (Mathf.FloorToInt(m.y) * w)] = Input.GetMouseButton(0) ? 1 : 0;
                 backBuffB.SetData(arrB);
@@ -227,15 +269,25 @@ public class PicoReactionDiffusion : MonoBehaviour
             else
             {
                 frontBuffB.GetData(arrB);
-                for (int _x = (x - 1) < 0 ? 0 : (x - 1); _x <= x + 1 && _x < w; _x++)
+                // for (int _x = (x - 1) < 0 ? 0 : (x - 1); _x <= x + 1 && _x < w; _x++)
+                // {
+                //     for (int _y = (y - 1) < 0 ? 0 : (y - 1); _y <= y + 1 && _y < h; _y++)
+                //     {
+                //         arrB[_x + (y * w)] = Input.GetMouseButton(0) ? 1 : 0;
+                //     }
+                // }
+                if (lastFrame.HasValue)
                 {
-                    for (int _y = (y - 1) < 0 ? 0 : (y - 1); _y <= y + 1 && _y < h; _y++)
-                    {
-                        arrB[_x + (y * w)] = Input.GetMouseButton(0) ? 1 : 0;
-                    }
+                    _line(mousePosition.Value, lastFrame.Value, ref arrB, !Input.GetMouseButton(0));
+                }
+                else
+                {
+                    _line(mousePosition.Value, mousePosition.Value, ref arrB, !Input.GetMouseButton(0));
                 }
                 frontBuffB.SetData(arrB);
             }
+
+
         }
         for (int i = 0; i < T; i++)
         {
@@ -341,6 +393,15 @@ public class PicoReactionDiffusion : MonoBehaviour
         // }
 
         // p.flip();
+        if (Input.GetMouseButton(0) || Input.GetMouseButton(1))
+        {
+            lastFrame = mousePosition;
+        }
+        else
+        {
+            lastFrame = null;
+        }
+        // lastFrame = Input.GetMouseButton(0) || Input.GetMouseButton(1);
     }
 
     void OnDestroy()

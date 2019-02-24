@@ -229,6 +229,16 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   Width: 256
   Height: 256
+  filterMode: 0
+  spritesheet: {fileID: 2800000, guid: 6d987d532ec5e4a2e84ee63220576ec7, type: 3}
+  a:
+    serializedVersion: 2
+    m_Curve: []
+    m_PreInfinity: 2
+    m_PostInfinity: 2
+    m_RotationOrder: 4
+  chance: 1
+  dither: 0
 --- !u!64 &1249118875
 MeshCollider:
   m_ObjectHideFlags: 0

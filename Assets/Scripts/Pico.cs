@@ -101,11 +101,11 @@ public class Pico : MonoBehaviour
             new Color32(255, 204, 170, 255), // 15 peach
             new Color32(0, 0, 0, 0), // 16 transparent
         };
-        for (byte i = 0; i < 16; i++)
-        {
-            // byte v = (byte)Mathf.FloorToInt(Mathf.Clamp(a.Evaluate((float)i / 15.0f), 0, 1) );
-            colors[i] = Color32.Lerp(new Color32(255, 241, 232, 255), new Color32(41, 173, 255, 255), a.Evaluate((float)i / 15.0f));
-        }
+        // for (byte i = 0; i < 16; i++)
+        // {
+        //     // byte v = (byte)Mathf.FloorToInt(Mathf.Clamp(a.Evaluate((float)i / 15.0f), 0, 1) );
+        //     colors[i] = Color32.Lerp(new Color32(255, 241, 232, 255), new Color32(41, 173, 255, 255), a.Evaluate((float)i / 15.0f));
+        // }
 
         paletteData = palette.GetRawTextureData<Color32>();
         for (int i = 0; i < colors.Length; i++)
