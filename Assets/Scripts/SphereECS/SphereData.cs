@@ -1,12 +1,12 @@
 ﻿using System;
 using Unity.Entities;
+using Unity.Mathematics;
 namespace SphereECS
 {
     [Serializable]
     public struct SphereData : IComponentData
     {
-        public int x;
-        public int y;
+        public float2 pos;
     }
 
 }
